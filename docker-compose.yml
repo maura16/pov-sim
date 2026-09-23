@@ -1,4 +1,4 @@
-version: '1'
+
 services:
   airlines:
     build: 
@@ -17,8 +17,18 @@ services:
       # added for local debugging
       #- OTEL_METRICS_EXPORTER=otlp,console
       #- OTEL_TRACES_EXPORTER=otlp,console
-      - OTEL_LOGS_EXPORTER=otlp,console
-      
+      - OTEL_LOGS_EXPORTER=otlp
+
+      # pyroscope config
+      - PYROSCOPE_APPLICATION_NAME=airlines
+      - PYROSCOPE_SERVER_ADDRESS=${GRAFANA_CLOUD_PYROSCOPE_URL}
+      - PYROSCOPE_BASIC_AUTH_USER=${GRAFANA_CLOUD_PYROSCOPE_USER}
+      - PYROSCOPE_BASIC_AUTH_PASSWORD=${GRAFANA_CLOUD_PYROSCOPE_API_KEY}
+      - PYROSCOPE_FORMAT=jfr
+      - PYROSCOPE_LABELS=service_namespace=pov-sim,deployment_environment=local
+      # for pyroscope memory/lock profiles
+      - PYROSCOPE_PROFILER_ALLOC=512k   # allocation profiling threshold
+      - PYROSCOPE_PROFILER_LOCK=10ms    # lock contention threshold
     depends_on:
       - alloy
   flights:
@@ -33,10 +43,15 @@ services:
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
       - OTEL_TRACES_EXPORTER=otlp
       - OTEL_METRICS_EXPORTER=otlp
-      - OTEL_LOGS_EXPORTER=otlp,console
+      - OTEL_LOGS_EXPORTER=otlp
       - OTEL_PYTHON_LOG_CORRELATION=true # injects trace_id/span_id/service.name into the console log format
       - OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true # bridge that turns stdlib logging calls into OTel log records
       
+      # pyroscope config
+      - PYROSCOPE_APPLICATION_NAME=flights
+      - PYROSCOPE_SERVER_ADDRESS=${GRAFANA_CLOUD_PYROSCOPE_URL}
+      - PYROSCOPE_BASIC_AUTH_USER=${GRAFANA_CLOUD_PYROSCOPE_USER}
+      - PYROSCOPE_BASIC_AUTH_PASSWORD=${GRAFANA_CLOUD_PYROSCOPE_API_KEY}
     depends_on:
       - alloy
   frontend:
@@ -61,6 +76,7 @@ services:
       - /etc/alloy/config.alloy
     env_file:
       - .env
+
 
 volumes:
   alloy-data:

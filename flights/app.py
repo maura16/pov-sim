@@ -3,6 +3,20 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from utils import get_random_int
 
+import os
+import pyroscope
+
+pyroscope.configure(
+    application_name    = os.getenv("PYROSCOPE_APPLICATION_NAME", "flights"),
+    server_address      = os.getenv("PYROSCOPE_SERVER_ADDRESS"),
+    basic_auth_username  = os.getenv("PYROSCOPE_BASIC_AUTH_USER"),
+    basic_auth_password  = os.getenv("PYROSCOPE_BASIC_AUTH_PASSWORD"),
+    tags = {
+        "service_namespace": "pov-sim",
+        "deployment_environment": "local",
+    },
+)
+
 app = Flask(__name__)
 Swagger(app)
 CORS(app)

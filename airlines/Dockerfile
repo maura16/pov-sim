@@ -21,7 +21,11 @@ COPY --from=build /app/build/libs/*.jar app.jar
 
 # Grafana's OTel Java distribution (zero-code instrumentation)
 ADD https://github.com/grafana/grafana-opentelemetry-java/releases/download/v2.31.1/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-java.jar
-ENV JAVA_TOOL_OPTIONS="-javaagent:/app/grafana-opentelemetry-java.jar"
+
+# Grafana Pyroscope Java agent
+ADD https://github.com/grafana/pyroscope-java/releases/download/v2.9.2/pyroscope.jar /app/pyroscope.jar
+
+ENV JAVA_TOOL_OPTIONS="-javaagent:/app/grafana-opentelemetry-java.jar -javaagent:/app/pyroscope.jar"
 
 # Expose the port the application runs on
 EXPOSE 8080
