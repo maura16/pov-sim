@@ -5,11 +5,40 @@ services:
       context: ./airlines
     ports:
       - "8080:8080"
+    environment:
+      - OTEL_SERVICE_NAME=airlines
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=pov-sim,deployment.environment=local,grafana.host.id=airlines
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      
+      # optional cost-saving flag (data-saver mode)
+      - GRAFANA_OTEL_APPLICATION_OBSERVABILITY_METRICS=true
+      
+      # added for local debugging
+      #- OTEL_METRICS_EXPORTER=otlp,console
+      #- OTEL_TRACES_EXPORTER=otlp,console
+      - OTEL_LOGS_EXPORTER=otlp,console
+      
+    depends_on:
+      - alloy
   flights:
     build: 
       context: ./flights
     ports:
       - "5001:5001"
+    environment:
+      - OTEL_SERVICE_NAME=flights
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=pov-sim,deployment.environment=local,grafana.host.id=flights
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp,console
+      - OTEL_PYTHON_LOG_CORRELATION=true # injects trace_id/span_id/service.name into the console log format
+      - OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true # bridge that turns stdlib logging calls into OTel log records
+      
+    depends_on:
+      - alloy
   frontend:
     build: 
       context: ./frontend
@@ -18,3 +47,20 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+  alloy:
+    image: grafana/alloy:latest
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - alloy-data:/var/lib/alloy/data
+    ports:
+      - "12345:12345"   # Alloy UI, for debugging pipelines
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    env_file:
+      - .env
+
+volumes:
+  alloy-data:
