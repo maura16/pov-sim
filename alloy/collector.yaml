@@ -1,0 +1,37 @@
+# For K8s Monitoring. Run with: 
+ # helm upgrade --install grafana-cloud \
+ #  --namespace monitoring --create-namespace \
+ #  grafana/k8s-monitoring \
+ #  --set "cluster.name=sample-k8s-cluster" \
+ #  --set "collectorCommon.alloy.remoteConfig.enabled=true" \
+ #  --set-string "collectorCommon.alloy.remoteConfig.url=https://fleet-management-prod-002.grafana.net" \
+ #  --set-string "collectorCommon.alloy.remoteConfig.auth.username=1834234" \
+ #  --set-string "collectorCommon.alloy.remoteConfig.auth.password=<token>" \
+ #  -f ./alloy/collector.yaml
+
+collectors:
+  alloy:
+    presets: [large, root, host-network, host-storage, host-cgroup, clustered, service-discovery, filesystem-log-reader, daemonset, otel-receiver]
+    extraService:
+      enabled: true
+      name: otel-receiver
+
+# Add these if Kubernetes monitoring is enabled
+telemetryServices:
+  node-exporter:
+    deploy: true
+
+  kube-state-metrics:
+    deploy: true
+
+  beyla:
+    deploy: true
+    k8sCache:
+      replicas: 1
+
+  opencost:
+    deploy: false
+
+  sdkInjector:
+    deploy: true
+    allowedConfigMapWriters: system:serviceaccount:monitoring:grafana-cloud-alloy

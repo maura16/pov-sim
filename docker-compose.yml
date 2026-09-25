@@ -7,10 +7,10 @@ services:
       - "8080:8080"
     environment:
       - OTEL_SERVICE_NAME=airlines
+      # added grafana.host.id for missing host identification attribute
       - OTEL_RESOURCE_ATTRIBUTES=service.namespace=pov-sim,deployment.environment=local,grafana.host.id=airlines
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      
       # optional cost-saving flag (data-saver mode)
       - GRAFANA_OTEL_APPLICATION_OBSERVABILITY_METRICS=true
       
@@ -29,6 +29,8 @@ services:
       # for pyroscope memory/lock profiles
       - PYROSCOPE_PROFILER_ALLOC=512k   # allocation profiling threshold
       - PYROSCOPE_PROFILER_LOCK=10ms    # lock contention threshold
+
+
     depends_on:
       - alloy
   flights:
