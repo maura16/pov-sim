@@ -16,6 +16,20 @@ services:
       - OTEL_METRICS_EXPORTER=otlp,console
       - OTEL_LOGS_EXPORTER=otlp,console
       - OTEL_TRACES_EXPORTER=otlp,console
+
+      # pyroscope config 
+      - PYROSCOPE_APPLICATION_NAME=airlines
+      - PYROSCOPE_SERVER_ADDRESS=${GRAFANA_CLOUD_PYROSCOPE_URL}
+      - PYROSCOPE_BASIC_AUTH_USER=${GRAFANA_CLOUD_PYROSCOPE_USER}
+      - PYROSCOPE_BASIC_AUTH_PASSWORD=${GRAFANA_CLOUD_PYROSCOPE_API_KEY}
+      - PYROSCOPE_FORMAT=jfr
+      - PYROSCOPE_PROFILING_INTERVAL=10ms
+      - PYROSCOPE_PROFILER_EVENT=itimer
+      - PYROSCOPE_PROFILER_LOCK=10ms # lock contention threshold
+      - PYROSCOPE_PROFILER_ALLOC=512k # allocation profiling threshold
+      - PYROSCOPE_UPLOAD_INTERVAL=15s
+      - PYROSCOPE_LOG_LEVEL=debug
+      - PYROSCOPE_LABELS=service_namespace=pov-sim,deployment_environment=mk-local 
   flights:
     build: 
       context: ./flights
@@ -32,6 +46,11 @@ services:
       - OTEL_METRICS_EXPORTER=otlp,console
       - OTEL_LOGS_EXPORTER=otlp,console
       - OTEL_TRACES_EXPORTER=otlp,console
+
+      # pyroscope auth creds (rest configured in flights/app.py)
+      - PYROSCOPE_SERVER_ADDRESS=${GRAFANA_CLOUD_PYROSCOPE_URL}
+      - PYROSCOPE_BASIC_AUTH_USER=${GRAFANA_CLOUD_PYROSCOPE_USER}
+      - PYROSCOPE_BASIC_AUTH_PASSWORD=${GRAFANA_CLOUD_PYROSCOPE_API_KEY}
   frontend:
     build: 
       context: ./frontend
