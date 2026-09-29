@@ -1,0 +1,53 @@
+collectorCommon:
+  alloy:
+    remoteConfig:
+      extraAttributes:
+        environment: "minikube-mama"
+
+collectors:
+  alloy:
+    presets: [large, root, host-network, host-storage, host-cgroup, clustered, service-discovery, filesystem-log-reader, daemonset, otel-receiver]
+    extraService:
+      enabled: true
+      name: otel-receiver
+
+# Add these if Kubernetes monitoring is enabled
+telemetryServices:
+  node-exporter:
+    deploy: true
+
+  kube-state-metrics:
+    deploy: true
+
+  beyla:
+    deploy: true
+    k8sCache:
+      replicas: 1
+
+  opencost:
+    deploy: false
+  #  metricsSource: custom
+  #  opencost:
+  #    exporter:
+  #      defaultClusterId: "cute-minikube-cluster"
+  #    prometheus:
+  #      username: "3592692"
+  #      password: "<token>"
+  #      external:
+  #        url: "https://prometheus-us-central2.grafana.net/api/prom"
+
+  kepler:
+    deploy: true
+
+  k8s-manifest-tail:
+    deploy: true
+    config:
+      objects:
+        - { apiVersion: v1, kind: Pod }
+        - { apiVersion: apps/v1, kind: Deployment }
+        - { apiVersion: apps/v1, kind: StatefulSet }
+        - { apiVersion: apps/v1, kind: DaemonSet }
+
+  sdkInjector:
+    deploy: true
+    allowedConfigMapWriters: system:serviceaccount:monitoring:grafana-cloud-alloy
